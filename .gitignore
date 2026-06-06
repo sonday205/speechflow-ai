@@ -36,6 +36,7 @@ dist/
 .vite/
 
 # Local storage outputs
+backend/.cache/
 backend/storage/uploads/*
 backend/storage/converted/*
 backend/storage/chunks/*

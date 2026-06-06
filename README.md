@@ -54,6 +54,7 @@ Backend:
 - faster-whisper
 - ffmpeg / ffprobe
 - Pydantic settings
+- Docker with NVIDIA CUDA for local GPU execution
 
 ## Architecture
 
@@ -86,24 +87,20 @@ React Frontend
 
 ## Local Setup
 
-### 1. Install ffmpeg
+### 1. Verify Docker GPU
 
-Install ffmpeg on Windows and make sure these commands work:
+For the recommended local GPU setup, make sure Docker can access the NVIDIA GPU:
 
 ```powershell
-ffmpeg -version
-ffprobe -version
+docker run --rm --gpus all nvidia/cuda:12.4.1-base-ubuntu22.04 nvidia-smi
 ```
 
-### 2. Run Backend
+### 2. Run Backend with Docker GPU
+
+From the project root:
 
 ```powershell
-cd backend
-py -3 -m venv .venv
-.\.venv\Scripts\activate
-pip install -r requirements.txt
-copy .env.example .env
-uvicorn app.main:app --reload
+docker compose up --build backend
 ```
 
 Backend:
@@ -118,7 +115,30 @@ API docs:
 http://localhost:8000/docs
 ```
 
-### 3. Run Frontend
+Generated files stay in `backend/storage`, and downloaded Whisper models are cached in
+`backend/.cache`.
+
+### 3. Run Backend without Docker
+
+If you prefer running Python directly, install ffmpeg on Windows first and make sure these commands work:
+
+```powershell
+ffmpeg -version
+ffprobe -version
+```
+
+Then run:
+
+```powershell
+cd backend
+py -3 -m venv .venv
+.\.venv\Scripts\activate
+pip install -r requirements.txt
+copy .env.example .env
+uvicorn app.main:app --reload
+```
+
+### 4. Run Frontend Locally
 
 ```powershell
 cd frontend
@@ -146,7 +166,7 @@ FRONTEND_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
 
 WHISPER_MODEL=small.en
 WHISPER_DEVICE=cuda
-WHISPER_COMPUTE_TYPE=float16
+WHISPER_COMPUTE_TYPE=int8_float16
 
 MAX_AUDIO_DURATION_SECONDS=600
 MAX_FILE_SIZE_MB=100
@@ -214,7 +234,9 @@ speechflow-ai/
 |   |   |-- converted/
 |   |   |-- chunks/
 |   |   `-- results/
+|   |-- .dockerignore
 |   |-- .env.example
+|   |-- Dockerfile
 |   |-- README.md
 |   `-- requirements.txt
 |-- frontend/
@@ -229,6 +251,7 @@ speechflow-ai/
 |   |-- README.md
 |   `-- package.json
 |-- .gitignore
+|-- docker-compose.yml
 `-- README.md
 ```
 
@@ -292,6 +315,13 @@ FRONTEND_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
 `backend unavailable`
 
 Make sure FastAPI is running:
+
+```powershell
+cd D:\SpeechToText\speechflow-ai
+docker compose up --build backend
+```
+
+Or run the backend directly:
 
 ```powershell
 cd backend
